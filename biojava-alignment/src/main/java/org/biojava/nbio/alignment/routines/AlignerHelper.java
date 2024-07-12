@@ -302,15 +302,17 @@ public class AlignerHelper {
 	}
 	/**
 	 * Calculate the optimal alignment score for the given sequence positions with an affine or constant gap penalty
-	 * @param x position in query
-	 * @param y position in target
-	 * @param gop gap opening penalty
-	 * @param gep gap extension penalty
+	 * @param seqPos Sequence position
 	 * @param sub compound match score
 	 * @param scores dynamic programming score matrix to fill at the given position
 	 * @return traceback direction for substitution, deletion and insertion
 	 */
-	public static Last[] setScorePoint(int x, int y, int gop, int gep, int sub, int[][][] scores) {
+	public static Last[] setScorePoint(SequencePosition seqPos, int sub, int[][][] scores) {
+		int x = seqPos.getX();
+		int y = seqPos.getY();
+		int gop = seqPos.getGop();
+		int gep = seqPos.getGep();
+
 		Last[] pointers = new Last[3];
 
 		// substitution
@@ -347,14 +349,16 @@ public class AlignerHelper {
 	}
 	/**
 	 * Calculates the optimal alignment score for the given sequence positions and a linear gap penalty
-	 * @param x position in query
-	 * @param y position in target
-	 * @param gep gap extension penalty
+	 * @param seqPos Sequence position
 	 * @param sub compound match score
 	 * @param scores dynamic programming score matrix to fill at the given position
 	 * @return traceback directions for substitution, deletion and insertion respectively
 	 */
-	public static Last setScorePoint(int x, int y, int gep, int sub, int[][][] scores) {
+	public static Last setScorePointLinear(SequencePosition seqPos, int sub, int[][][] scores) {
+		int x = seqPos.getX();
+		int y = seqPos.getY();
+		int gep = seqPos.getGep();
+
 		int d = scores[x - 1][y][0] + gep;
 		int i = scores[x][y - 1][0] + gep;
 		int s = scores[x - 1][y - 1][0] + sub;
@@ -427,7 +431,7 @@ public class AlignerHelper {
 			scores[x][yb][1] = scores[x - 1][yb][1] + gep;
 			pointers[yb] = new Last[] { null, Last.DELETION, null };
 			for (int y = yb + 1; y <= ye; y++) {
-				pointers[y] = setScorePoint(x, y, gop, gep, subs[y], scores);
+				pointers[y] = setScorePoint(new SequencePosition(x,y,gop,gep), subs[y], scores);
 			}
 		}
 		return pointers;
@@ -479,7 +483,7 @@ public class AlignerHelper {
 			scores[x][yb][0] = scores[x - 1][yb][0] + gep;
 			pointers[yb][0] = Last.DELETION;
 			for (int y = yb + 1; y <= ye; y++) {
-				pointers[y][0] = setScorePoint(x, y, gep, subs[y], scores);
+				pointers[y][0] = setScorePointLinear(new SequencePosition(x,y,gep), subs[y], scores);
 			}
 		}
 		return pointers;
@@ -527,7 +531,7 @@ public class AlignerHelper {
 			pointers = new Last[ye + 1][];
 			pointers[0] = new Last[scores[0][0].length];
 			for (int y = 1; y < scores[0].length; y++) {
-				pointers[y] = setScorePoint(x, y, gop, gep, subs[y], scores);
+				pointers[y] = setScorePoint(new SequencePosition(x,y,gop,gep), subs[y], scores);
 				for (int z = 0; z < scores[0][0].length; z++) {
 					if (scores[x][y][z] <= 0) {
 						scores[x][y][z] = 0;
@@ -584,7 +588,7 @@ public class AlignerHelper {
 			pointers = new Last[ye + 1][1];
 			pointers[0] = new Last[1];
 			for (int y = 1; y < scores[x].length; y++) {
-				pointers[y][0] = setScorePoint(x, y, gep, subs[y], scores);
+				pointers[y][0] = setScorePointLinear(new SequencePosition(x,y,gep), subs[y], scores);
 				if (scores[x][y][0] <= 0) {
 					scores[x][y][0] = 0;
 					pointers[y][0] = null;
