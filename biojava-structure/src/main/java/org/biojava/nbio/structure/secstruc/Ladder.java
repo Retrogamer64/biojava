@@ -51,25 +51,4 @@ public class Ladder implements Serializable  {
 	public int getTo() {
 		return to;
 	}
-
-	public int getLfrom() {
-		return lfrom;
-	}
-
-	public int getLto() {
-		return lto;
-	}
-
-	public BridgeType getBtype() {
-		return btype;
-	}
-
-	public int getConnectedTo() {
-		return connectedTo;
-	}
-
-	public int getConnectedFrom() {
-		return connectedFrom;
-	}
-
 }
