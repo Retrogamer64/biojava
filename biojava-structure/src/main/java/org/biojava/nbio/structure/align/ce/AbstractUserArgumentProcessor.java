@@ -310,51 +310,8 @@ public abstract class AbstractUserArgumentProcessor implements UserArgumentProce
 		}
 
 		// first load two example structures
-
-		Structure structure1 = null;
-		Structure structure2 = null;
-
-		String path = params.getPdbFilePath();
-
-		if ( file1 == null || file2 == null) {
-			if ( path == null){
-				UserConfiguration c = new UserConfiguration();
-				path = c.getPdbFilePath();
-				System.err.println("You did not specify the -pdbFilePath parameter. Defaulting to "+path+".");
-			}
-
-			AtomCache cache = new AtomCache(path, path);
-			if(params.isAutoFetch()) {
-				cache.setFetchBehavior(FetchBehavior.DEFAULT);
-			} else {
-				cache.setFetchBehavior(FetchBehavior.LOCAL_ONLY);
-			}
-			structure1 = getStructure(cache, name1, file1);
-			structure2 = getStructure(cache, name2, file2);
-		} else {
-
-			structure1 = getStructure(null, name1, file1);
-			structure2 = getStructure(null, name2, file2);
-		}
-
-
-
-		if ( structure1 == null){
-			System.err.println("structure 1 is null, can't run alignment.");
-			System.exit(1); return;
-		}
-
-		if ( structure2 == null){
-			System.err.println("structure 2 is null, can't run alignment.");
-			System.exit(1); return;
-		}
-
-		if ( name1 == null) {
-			name1 = structure1.getName();
-		}
-		if ( name2 == null) {
-			name2 = structure2.getName();
-		}
+		PairwiseStructure structures = loadStructures(file1, file2, name1, name2);
+		if (structures == null) return;
 
 		//                   default:      new:
 		// 1buz - 1ali : time: 8.3s eqr 68 rmsd 3.1 score 161 | time 6.4 eqr 58 rmsd 3.0 scre 168
@@ -364,14 +321,13 @@ public abstract class AbstractUserArgumentProcessor implements UserArgumentProce
 		// 1nbw.A - 1kid
 		// 1t4y - 1rp5
 
-
 		try {
 
 			Atom[] ca1;
 			Atom[] ca2;
 
-			ca1 = StructureTools.getRepresentativeAtomArray(structure1);
-			ca2 = StructureTools.getRepresentativeAtomArray(structure2);
+			ca1 = StructureTools.getRepresentativeAtomArray(structures.structure1);
+			ca2 = StructureTools.getRepresentativeAtomArray(structures.structure2);
 
 			StructureAlignment algorithm =  getAlgorithm();
 			Object jparams = getParameters();
@@ -379,8 +335,8 @@ public abstract class AbstractUserArgumentProcessor implements UserArgumentProce
 			AFPChain afpChain;
 
 			afpChain = algorithm.align(ca1, ca2, jparams);
-			afpChain.setName1(name1);
-			afpChain.setName2(name2);
+			afpChain.setName1(structures.name1);
+			afpChain.setName2(structures.name2);
 
 			if ( params.isShow3d()){
 
@@ -399,20 +355,10 @@ public abstract class AbstractUserArgumentProcessor implements UserArgumentProce
 						System.err.println(e.getMessage());
 						e.printStackTrace();
 					}
-					//StructureAlignmentJmol jmol = algorithm.display(afpChain,ca1,ca2,hetatms1, nucs1, hetatms2, nucs2);
-
-					//String result = afpChain.toFatcat(ca1, ca2);
-					//String rot = afpChain.toRotMat();
-
-					//DisplayAFP.showAlignmentImage(afpChain, ca1,ca2,jmol);
 				}
 			}
 
-
 			checkWriteFile(afpChain,ca1, ca2, false);
-
-
-
 
 			if ( params.isPrintXML()){
 				String fatcatXML = AFPChainXMLConverter.toXML(afpChain,ca1,ca2);
@@ -444,6 +390,70 @@ public abstract class AbstractUserArgumentProcessor implements UserArgumentProce
 		} catch (StructureException e) {
 			e.printStackTrace();
 			System.exit(1); return;
+		}
+	}
+
+	private PairwiseStructure loadStructures(String file1, String file2, String name1, String name2) {
+		Structure structure1 = null;
+		Structure structure2 = null;
+
+		String path = params.getPdbFilePath();
+
+		if ( file1 == null || file2 == null) {
+			if ( path == null){
+				UserConfiguration c = new UserConfiguration();
+				path = c.getPdbFilePath();
+				System.err.println("You did not specify the -pdbFilePath parameter. Defaulting to "+path+".");
+			}
+
+			AtomCache cache = new AtomCache(path, path);
+			if(params.isAutoFetch()) {
+				cache.setFetchBehavior(FetchBehavior.DEFAULT);
+			} else {
+				cache.setFetchBehavior(FetchBehavior.LOCAL_ONLY);
+			}
+			structure1 = getStructure(cache, name1, file1);
+			structure2 = getStructure(cache, name2, file2);
+		} else {
+
+			structure1 = getStructure(null, name1, file1);
+			structure2 = getStructure(null, name2, file2);
+		}
+
+
+		if ( structure1 == null){
+			System.err.println("structure 1 is null, can't run alignment.");
+			System.exit(1);
+			return null;
+		}
+
+		if ( structure2 == null){
+			System.err.println("structure 2 is null, can't run alignment.");
+			System.exit(1);
+			return null;
+		}
+
+		if ( name1 == null) {
+			name1 = structure1.getName();
+		}
+		if ( name2 == null) {
+			name2 = structure2.getName();
+		}
+		PairwiseStructure structure = new PairwiseStructure(name1, name2, structure1, structure2);
+		return structure;
+	}
+
+	private static class PairwiseStructure {
+		public final String name1;
+		public final String name2;
+		public final Structure structure1;
+		public final Structure structure2;
+
+		public PairwiseStructure(String name1, String name2, Structure structure1, Structure structure2) {
+			this.name1 = name1;
+			this.name2 = name2;
+			this.structure1 = structure1;
+			this.structure2 = structure2;
 		}
 	}
 
