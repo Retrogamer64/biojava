@@ -351,11 +351,11 @@ public class StockholmStructure {
 			this.reference = reference;
 		}
 
-		public DatabaseReference(String representativeAnnotationString) {
-			int semiColonIndex = representativeAnnotationString.indexOf(';');
-			this.database = representativeAnnotationString.substring(0, semiColonIndex);
-			this.reference = representativeAnnotationString.substring(semiColonIndex + 1,
-					representativeAnnotationString.lastIndexOf(';')).trim();
+		public DatabaseReference(String representiveString) {
+			int semiColonIndex = representiveString.indexOf(';');
+			this.database = representiveString.substring(0, semiColonIndex);
+			this.reference = representiveString.substring(semiColonIndex + 1,
+					representiveString.lastIndexOf(';')).trim();
 		}
 
 		@Override
