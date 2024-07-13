@@ -25,10 +25,7 @@ package org.biojava.nbio.alignment.routines;
 
 import org.biojava.nbio.core.alignment.template.AlignedSequence.Step;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
@@ -79,7 +76,7 @@ public class AlignerHelper {
 			return targetIndices[targetIndices.length - 1][z];
 		}
 
-		public void update(int x, Subproblem subproblem, Last[][] pointers) {
+		public void update(int x, AlignerHelperSubproblem.Subproblem subproblem, Last[][] pointers) {
 			if (pointers[subproblem.getTargetStartIndex()].length == 1) {
 				if (queryIndex == x - 1) {
 					updateLinearInitial(subproblem, pointers);
@@ -95,7 +92,7 @@ public class AlignerHelper {
 			}
 		}
 
-		private void updateAdvance(Subproblem subproblem, Last[][] pointers) {
+		private void updateAdvance(AlignerHelperSubproblem.Subproblem subproblem, Last[][] pointers) {
 			tiLast = targetIndices;
 			targetIndices = (targetIndices == ti2) ? ti1 : ti2;
 			for (int y = subproblem.getTargetStartIndex(); y <= subproblem.getTargetEndIndex(); y++) {
@@ -111,7 +108,7 @@ public class AlignerHelper {
 			}
 		}
 
-		private void updateInitial(Subproblem subproblem, Last[][] pointers) {
+		private void updateInitial(AlignerHelperSubproblem.Subproblem subproblem, Last[][] pointers) {
 			for (int y = subproblem.getTargetStartIndex(); y <= subproblem.getTargetEndIndex(); y++) {
 				if (pointers[y][0] != null) {
 					targetIndices[y][0] = y - 1;
@@ -125,7 +122,7 @@ public class AlignerHelper {
 			}
 		}
 
-		private void updateLinearAdvance(Subproblem subproblem, Last[][] pointers) {
+		private void updateLinearAdvance(AlignerHelperSubproblem.Subproblem subproblem, Last[][] pointers) {
 			tiLast = targetIndices;
 			targetIndices = (targetIndices == ti2) ? ti1 : ti2;
 			for (int y = subproblem.getTargetStartIndex(); y <= subproblem.getTargetEndIndex(); y++) {
@@ -142,7 +139,7 @@ public class AlignerHelper {
 			}
 		}
 
-		private void updateLinearInitial(Subproblem subproblem, Last[][] pointers) {
+		private void updateLinearInitial(AlignerHelperSubproblem.Subproblem subproblem, Last[][] pointers) {
 			for (int y = subproblem.getTargetStartIndex(); y <= subproblem.getTargetEndIndex(); y++) {
 				if (pointers[y][0] != null) {
 					switch (pointers[y][0]) {
@@ -174,7 +171,7 @@ public class AlignerHelper {
 		return addScore ? (int) subscore : 0;
 	}
 
-	public static Cut[] getCuts(int k, Subproblem subproblem, int[] dim, boolean anchor0) {
+	public static Cut[] getCuts(int k, AlignerHelperSubproblem.Subproblem subproblem, int[] dim, boolean anchor0) {
 		Cut[] cuts;
 		int m = subproblem.getQueryEndIndex() - subproblem.getQueryStartIndex() - (anchor0 ? 1 : 0);
 		if (k < m) {
@@ -191,111 +188,9 @@ public class AlignerHelper {
 		}
 		return cuts;
 	}
-	/**
-	 * Compounds in query and target sequences that must align
-	 * @author Daniel Cameron
-	 */
-	public static class Anchor {
-		public int getQueryIndex() {
-			return queryIndex;
-		}
-		public int getTargetIndex() {
-			return targetIndex;
-		}
-		private final int queryIndex;
-		private final int targetIndex;
-		public Anchor(int queryIndex, int targetIndex) {
-			this.queryIndex = queryIndex;
-			this.targetIndex = targetIndex;
-		}
-		public static class QueryIndexComparator implements Comparator<Anchor>, Serializable {
-			private static final long serialVersionUID = 1;
 
-			@Override
-			public int compare(Anchor o1, Anchor o2) {
-				return o1.getQueryIndex() - o2.getQueryIndex();
-			}
-		}
-	}
-	/**
-	 * Alignment subproblem. The bounds of the subproblem are the
-	 * indicies representing the inclusive bounds of the dynamic programming
-	 * alignment problem.
-	 * @author Daniel Cameron
-	 */
-	public static class Subproblem {
-		public int getTargetStartIndex() {
-			return targetStartIndex;
-		}
-		public int getQueryEndIndex() {
-			return queryEndIndex;
-		}
-		public int getTargetEndIndex() {
-			return targetEndIndex;
-		}
-		public int getQueryStartIndex() {
-			return queryStartIndex;
-		}
-		/**
-		 * Indicates whether the start query and start target index compounds
-		 * are anchored to each other
-		 * @return true if the compounds are anchored in the alignment, false otherwise
-		 */
-		public boolean isStartAnchored() {
-			return isAnchored;
-		}
-		private int queryStartIndex; // [0]
-		private int targetStartIndex; // [1]
-		private int queryEndIndex; // [2]
-		private int targetEndIndex; // [3]
-		private boolean isAnchored;
-		public Subproblem(int queryStartIndex, int targetStartIndex, int queryEndIndex, int targetEndIndex) {
-			this(queryStartIndex, targetStartIndex, queryEndIndex, targetEndIndex, false);
-		}
-		public Subproblem(int queryStartIndex, int targetStartIndex, int queryEndIndex, int targetEndIndex, boolean isAnchored) {
-			this.queryStartIndex = queryStartIndex;
-			this.targetStartIndex = targetStartIndex;
-			this.queryEndIndex = queryEndIndex;
-			this.targetEndIndex = targetEndIndex;
-			this.isAnchored = isAnchored;
-		}
-		/**
-		 * Convert a list of anchors into a subproblem list.
-		 * @param anchors anchored read pairs
-		 * @param querySequenceLength length of query sequence
-		 * @param targetSequenceLength length of target sequence
-		 * @return list alignment subproblems
-		 */
-		public static List<Subproblem> getSubproblems(List<Anchor> anchors, int querySequenceLength, int targetSequenceLength) {
-			Collections.sort(anchors, new Anchor.QueryIndexComparator());
-			List<Subproblem> list = new ArrayList<>();
-			Anchor last = new Anchor(-1, -1); // sentinal anchor
-			boolean isAnchored = false;
-			for (int i = 0; i < anchors.size(); i++) {
-				if (anchors.get(i).targetIndex <= last.targetIndex ||
-					anchors.get(i).queryIndex <= last.queryIndex) {
-					throw new IllegalArgumentException("Anchor set must allow at least one possible alignment.");
-				}
-				list.add(new Subproblem(
-						last.queryIndex + 1,
-						last.targetIndex + 1,
-						anchors.get(i).queryIndex,
-						anchors.get(i).targetIndex,
-						isAnchored));
-				last = anchors.get(i);
-				isAnchored = true;
-			}
-			list.add(new Subproblem(
-					last.queryIndex + 1,
-					last.targetIndex + 1,
-					querySequenceLength,
-					targetSequenceLength,
-					isAnchored));
-			return list;
-		}
-	}
 	// updates cut rows given the latest row of traceback pointers
-	public static void setCuts(int x, Subproblem subproblem, Last[][] pointers, Cut[]cuts) {
+	public static void setCuts(int x, AlignerHelperSubproblem.Subproblem subproblem, Last[][] pointers, Cut[]cuts) {
 		for (Cut c : cuts) {
 			c.update(x, subproblem, pointers);
 		}
@@ -385,8 +280,8 @@ public class AlignerHelper {
 	 * @param scores
 	 * @return
 	 */
-	public static Last[][] setScoreVector(int x, Subproblem subproblem, int gop, int gep, int[] subs, boolean storing,
-			int[][][] scores) {
+	public static Last[][] setScoreVector(int x, AlignerHelperSubproblem.Subproblem subproblem, int gop, int gep, int[] subs, boolean storing,
+										  int[][][] scores) {
 		return setScoreVector(x, subproblem.getQueryStartIndex(), subproblem.getTargetStartIndex(), subproblem.getTargetEndIndex(), gop, gep, subs, storing, scores, subproblem.isStartAnchored());
 	}
 
@@ -447,8 +342,8 @@ public class AlignerHelper {
 	 * @param scores
 	 * @return
 	 */
-	public static Last[][] setScoreVector(int x, Subproblem subproblem, int gep, int[] subs, boolean storing,
-			int[][][] scores) {
+	public static Last[][] setScoreVector(int x, AlignerHelperSubproblem.Subproblem subproblem, int gep, int[] subs, boolean storing,
+										  int[][][] scores) {
 		return setScoreVector(x, subproblem.getQueryStartIndex(), subproblem.getTargetStartIndex(), subproblem.getTargetEndIndex(), gep, subs, storing, scores, subproblem.isStartAnchored());
 	}
 

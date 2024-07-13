@@ -23,11 +23,12 @@
 
 package org.biojava.nbio.alignment.template;
 
+import org.biojava.nbio.alignment.routines.AlignerHelperSubproblem;
 import org.biojava.nbio.core.alignment.template.Profile;
 import org.biojava.nbio.core.alignment.template.SubstitutionMatrix;
-import org.biojava.nbio.alignment.routines.AlignerHelper.Anchor;
+import org.biojava.nbio.alignment.routines.AlignerHelperAnchor.Anchor;
 import org.biojava.nbio.alignment.routines.AlignerHelper.Last;
-import org.biojava.nbio.alignment.routines.AlignerHelper.Subproblem;
+import org.biojava.nbio.alignment.routines.AlignerHelperSubproblem.Subproblem;
 import org.biojava.nbio.core.alignment.template.AlignedSequence.Step;
 import org.biojava.nbio.core.sequence.template.Compound;
 import org.biojava.nbio.core.sequence.template.CompoundSet;
@@ -318,7 +319,7 @@ public abstract class AbstractMatrixAligner<S extends Sequence<C>, C extends Com
 			xyMax = new int[] { dim[0] - 1, dim[1] - 1 };
 			xyStart = new int[] { 0, 0 };
 			score = 0;
-			List<Subproblem> problems = Subproblem.getSubproblems(anchors, xyMax[0], xyMax[1]);
+			List<Subproblem> problems = AlignerHelperSubproblem.Subproblem.getSubproblems(anchors, xyMax[0], xyMax[1]);
 			assert problems.size() == anchors.size() + 1;
 			for (int i = 0; i < problems.size(); i++) {
 				Subproblem subproblem = problems.get(i);

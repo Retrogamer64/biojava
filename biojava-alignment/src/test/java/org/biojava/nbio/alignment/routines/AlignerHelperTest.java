@@ -20,9 +20,9 @@
  */
 package org.biojava.nbio.alignment.routines;
 
-import org.biojava.nbio.alignment.routines.AlignerHelper.Anchor;
+import org.biojava.nbio.alignment.routines.AlignerHelperAnchor.Anchor;
 import org.biojava.nbio.alignment.routines.AlignerHelper.Cut;
-import org.biojava.nbio.alignment.routines.AlignerHelper.Subproblem;
+import org.biojava.nbio.alignment.routines.AlignerHelperSubproblem.Subproblem;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -65,7 +65,7 @@ public class AlignerHelperTest {
 		List<Anchor> anchors = new ArrayList<Anchor>();
 		anchors.add(new Anchor(1, 2));
 		anchors.add(new Anchor(5, 5));
-		List<Subproblem> problems = AlignerHelper.Subproblem.getSubproblems(anchors, 10, 15);
+		List<Subproblem> problems = AlignerHelperSubproblem.Subproblem.getSubproblems(anchors, 10, 15);
 		assertEquals(3, problems.size());
 		assertEquals(0, problems.get(0).getQueryStartIndex());
 		assertEquals(0, problems.get(0).getTargetStartIndex());
@@ -83,7 +83,7 @@ public class AlignerHelperTest {
 	@Test
 	public void getSubproblems_should_allow_zero_anchors() {
 		List<Anchor> anchors = new ArrayList<Anchor>();
-		List<Subproblem> problems = AlignerHelper.Subproblem.getSubproblems(anchors, 10, 15);
+		List<Subproblem> problems = AlignerHelperSubproblem.Subproblem.getSubproblems(anchors, 10, 15);
 		assertEquals(1, problems.size());
 		assertEquals(0, problems.get(0).getQueryStartIndex());
 		assertEquals(0, problems.get(0).getTargetStartIndex());
@@ -96,7 +96,7 @@ public class AlignerHelperTest {
 		List<Anchor> anchors = new ArrayList<Anchor>();
 		anchors.add(new Anchor(0, 0));
 		anchors.add(new Anchor(9, 14));
-		List<Subproblem> problems = AlignerHelper.Subproblem.getSubproblems(anchors, 10, 15);
+		List<Subproblem> problems = AlignerHelperSubproblem.Subproblem.getSubproblems(anchors, 10, 15);
 		assertEquals(3, problems.size());
 		assertEquals(0, problems.get(0).getQueryStartIndex());
 		assertEquals(0, problems.get(0).getTargetStartIndex());
@@ -119,7 +119,7 @@ public class AlignerHelperTest {
 		List<Anchor> anchors = new ArrayList<Anchor>();
 		anchors.add(new Anchor(1, 1));
 		anchors.add(new Anchor(2, 3));
-		List<Subproblem> problems = AlignerHelper.Subproblem.getSubproblems(anchors, 10, 15);
+		List<Subproblem> problems = AlignerHelperSubproblem.Subproblem.getSubproblems(anchors, 10, 15);
 		assertEquals(3, problems.size());
 		assertEquals(2, problems.get(1).getQueryStartIndex());
 		assertEquals(2, problems.get(1).getTargetStartIndex());
@@ -135,13 +135,13 @@ public class AlignerHelperTest {
 		List<Anchor> anchors = new ArrayList<Anchor>();
 		anchors.add(new Anchor(1, 1));
 		anchors.add(new Anchor(1, 2));
-		AlignerHelper.Subproblem.getSubproblems(anchors, 10, 15);
+		AlignerHelperSubproblem.Subproblem.getSubproblems(anchors, 10, 15);
 	}
 	@Test(expected=IllegalArgumentException.class)
 	public void getSubproblems_should_not_allow_unalignable_anchors() {
 		List<Anchor> anchors = new ArrayList<Anchor>();
 		anchors.add(new Anchor(1, 2));
 		anchors.add(new Anchor(2, 1));
-		AlignerHelper.Subproblem.getSubproblems(anchors, 10, 15);
+		AlignerHelperSubproblem.Subproblem.getSubproblems(anchors, 10, 15);
 	}
 }

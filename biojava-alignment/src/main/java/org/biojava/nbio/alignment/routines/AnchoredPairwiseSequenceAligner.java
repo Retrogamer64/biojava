@@ -24,7 +24,7 @@
 package org.biojava.nbio.alignment.routines;
 
 import org.biojava.nbio.core.alignment.SimpleSequencePair;
-import org.biojava.nbio.alignment.routines.AlignerHelper.Anchor;
+import org.biojava.nbio.alignment.routines.AlignerHelperAnchor.Anchor;
 import org.biojava.nbio.alignment.template.AbstractPairwiseSequenceAligner;
 import org.biojava.nbio.core.alignment.template.AlignedSequence;
 import org.biojava.nbio.core.alignment.template.AlignedSequence.Step;
